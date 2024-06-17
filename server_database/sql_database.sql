@@ -2,6 +2,7 @@ CREATE TABLE Usuario (
 	id_usuario SERIAL,
 	nome VARCHAR,
 	email VARCHAR,
+	senha VARCHAR,
 	isAdmin BOOLEAN,
 	
 	PRIMARY KEY (id_usuario)
@@ -122,3 +123,22 @@ GRANT SELECT ON Catalogo to default_user;
 --SELECT * FROM Servico
 --SELECT * FROM usuario
 --SELECT * FROM Comentario
+
+
+
+--INSERT INTO usuario(nome,email, senha, isadmin) VALUES ('fred','fred1','fred1',false),('victor','victor@univali.com', 'v123', false),('andre','andre@univali.com', 'a123', true);
+
+--funcao para validar login, o valor sucesso do retorno indica se o nomeou e-mail e senha esta correto
+CREATE OR REPLACE FUNCTION validaLogin(login VARCHAR, vsenha VARCHAR) RETURNS TABLE (sucesso BOOLEAN, _nome VARCHAR, isAdm BOOLEAN) AS $$
+DECLARE
+sces BOOLEAN;
+nm VARCHAR;
+isAdm BOOLEAN;
+BEGIN
+	
+	sces := (SELECT count(id_usuario) FROM Usuario WHERE (Usuario.nome = login OR Usuario.email = login) AND Usuario.senha = vsenha) > 0;
+	nm := (SELECT nome FROM Usuario WHERE Usuario.nome = login OR Usuario.email = login LIMIT 1);
+	isAdm := (SELECT isAdmin FROM Usuario WHERE Usuario.nome = login OR Usuario.email = login LIMIT 1);
+	RETURN QUERY (SELECT sces as sucesso, nm as _nome, isAdm as isAdm);
+END;
+$$ LANGUAGE plpgsql;
